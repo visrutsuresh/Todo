@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { TYPE_ICON, CheckIcon } from '../../Icons';
+import { useDismiss } from '../../useDismiss';
 
 /**
  * Header for the two system columns, Title and Done. They can be renamed but
@@ -27,29 +28,13 @@ export default function SystemHeader({
   const btnRef = useRef<HTMLButtonElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    function onDown(e: MouseEvent) {
-      if (popRef.current?.contains(e.target as Node)) return;
-      if (btnRef.current?.contains(e.target as Node)) return;
-      close();
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') close();
-    }
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
-  function close() {
+  const close = useCallback(() => {
     setOpen(false);
     setText(label);
     setError('');
-  }
+  }, [label]);
+
+  useDismiss(open, close, [popRef, btnRef]);
 
   function toggle() {
     if (open) return close();

@@ -1,14 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { DatabaseIcon } from '../../Icons';
+import { useDismiss } from '../../useDismiss';
 
 /** Double-click to rename, matching the sidebar. Enter commits, Escape aborts. */
 export default function DbTitle({ id, name }: { id: string; name: string }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(name);
+  const wrapRef = useRef<HTMLHeadingElement>(null);
+
+  const cancel = useCallback(() => {
+    setText(name);
+    setEditing(false);
+  }, [name]);
+
+  useDismiss(editing, cancel, [wrapRef]);
 
   async function commit() {
     const trimmed = text.trim();
@@ -27,7 +36,7 @@ export default function DbTitle({ id, name }: { id: string; name: string }) {
   }
 
   return (
-    <h1 className="db-title">
+    <h1 className="db-title" ref={wrapRef}>
       <span className="db-title-icon">
         <DatabaseIcon width={26} height={26} />
       </span>
@@ -38,7 +47,7 @@ export default function DbTitle({ id, name }: { id: string; name: string }) {
           autoFocus
           value={text}
           onChange={(e) => setText(e.target.value)}
-          onBlur={commit}
+          // Click-away cancels rather than commits, matching the sidebar.
           onKeyDown={(e) => {
             if (e.key === 'Enter') commit();
             if (e.key === 'Escape') {

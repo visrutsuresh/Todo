@@ -123,3 +123,17 @@ Format: what the AI did, what I said, what changed.
 **Fix.** Clicking creates the row immediately with the title "task", then focuses **and selects** it, so the first keystroke replaces the placeholder rather than appending to it. That select step is the difference between "task" and "taskMy real title". The toolbar New button now calls the same function through a ref rather than focusing an input. Borders removed from both the add-row and the add-column cell, so both read as actions rather than as grid cells.
 
 **Lesson carried forward.** Two visual complaints, borders and a label, turned out to sit on top of a wrong interaction model. Fixing only what was pointed at would have left a prettier version of the same flaw.
+
+## C11 — Click-away dismissal was copy-pasted four times, so the two newest surfaces simply lacked it
+
+**What I said.** Clicking empty space should cancel the action. Specifically: opening Add property and then clicking away should abandon it.
+
+**Root cause.** Four components each carried their own hand-written copy of the same two listeners (`mousedown` for click-outside, `keydown` for Escape). The Add property form and the sidebar's new-database field were written later and simply never got a copy. The bug was not in any of the duplicated implementations, it was in the one that was never written. That is the characteristic failure of copy-paste: it does not break what exists, it silently omits.
+
+**Second bug the screenshot exposed.** Add property rendered inline inside the `<th>`, so on the last column the form overflowed off the right edge of the screen and its buttons were unreachable. Identical in shape to C8, which I had supposedly already learned. Now an anchored popover clamped to the viewport.
+
+**Third thing, a genuine conflict.** The rename fields committed on blur. "Click away cancels" and "blur saves" are contradictory, and a click-away would have fired both. Removed the blur commit: Enter saves, click-away and Escape cancel, consistently everywhere.
+
+**Fix.** One `useDismiss` hook, used by all five surfaces. Verified zero remaining `addEventListener('mousedown')` calls outside it.
+
+**Lesson carried forward.** When an AI needs the same behaviour in a fifth place, it writes it a fifth time rather than noticing it has written it four times already. Duplication does not announce itself as a bug until something is missing from one copy, and then the symptom looks unrelated to the cause.

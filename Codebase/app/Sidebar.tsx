@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DatabaseIcon, PlusIcon, ChevronIcon, PencilIcon, TrashIcon } from './Icons';
 import ConfirmDialog from './ConfirmDialog';
+import { useDismiss } from './useDismiss';
 
 type Db = { id: string; name: string };
 
@@ -35,27 +36,23 @@ export default function Sidebar({
   const [confirmDelete, setConfirmDelete] = useState<Db | null>(null);
   const footerRef = useRef<HTMLDivElement>(null);
 
-  // Escape and click-outside dismiss both popovers. Without these they can only
-  // be closed by re-clicking the trigger, which feels broken.
-  useEffect(() => {
-    function onDown(e: MouseEvent) {
-      if (footerRef.current && !footerRef.current.contains(e.target as Node)) setMenu(false);
-      setCtx(null);
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setMenu(false);
-        setCtx(null);
-        setRenaming(null);
-      }
-    }
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
+  const addRef = useRef<HTMLFormElement>(null);
+  const addBtnRef = useRef<HTMLButtonElement>(null);
+  const ctxRef = useRef<HTMLDivElement>(null);
+
+  const closeMenu = useCallback(() => setMenu(false), []);
+  const closeCtx = useCallback(() => setCtx(null), []);
+  const closeAdd = useCallback(() => {
+    setAdding(false);
+    setName('');
   }, []);
+
+  useDismiss(menu, closeMenu, [footerRef]);
+  useDismiss(!!ctx, closeCtx, [ctxRef]);
+  // This one was missing entirely: clicking away from the new-database field
+  // left it open with whatever had been typed in it.
+  useDismiss(adding, closeAdd, [addRef, addBtnRef]);
+  useDismiss(!!renaming, useCallback(() => setRenaming(null), []), []);
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
@@ -110,7 +107,12 @@ export default function Sidebar({
     <>
       <aside className="sidebar">
         <div className="sb-toolbar">
-          <button className="btn btn-ghost btn-icon" title="New database" onClick={() => setAdding((a) => !a)}>
+          <button
+            ref={addBtnRef}
+            className="btn btn-ghost btn-icon"
+            title="New database"
+            onClick={() => setAdding((a) => !a)}
+          >
             <PlusIcon />
           </button>
         </div>
@@ -133,7 +135,8 @@ export default function Sidebar({
                       autoFocus
                       value={renameText}
                       onChange={(e) => setRenameText(e.target.value)}
-                      onBlur={() => commitRename(d.id)}
+                      // No commit-on-blur: click-away CANCELS, per the rule that
+                      // clicking empty space abandons the action. Enter saves.
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') commitRename(d.id);
                         if (e.key === 'Escape') setRenaming(null);
@@ -165,14 +168,13 @@ export default function Sidebar({
           )}
 
           {adding && (
-            <form onSubmit={create} className="sb-add">
+            <form ref={addRef} onSubmit={create} className="sb-add">
               <input
                 className="field"
                 autoFocus
                 placeholder="Database name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                onBlur={() => !name && setAdding(false)}
               />
             </form>
           )}
@@ -196,12 +198,7 @@ export default function Sidebar({
       </aside>
 
       {ctx && (
-        <div
-          className="ctx"
-          style={{ left: ctx.x, top: ctx.y }}
-          role="menu"
-          onMouseDown={(e) => e.stopPropagation()}
-        >
+        <div ref={ctxRef} className="ctx" style={{ left: ctx.x, top: ctx.y }} role="menu">
           <button role="menuitem" onClick={() => startRename(ctx.db)}>
             <PencilIcon width={13} height={13} />
             Rename
