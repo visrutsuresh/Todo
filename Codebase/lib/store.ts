@@ -1,7 +1,7 @@
 import { getDb, newId, nowIso } from './db';
 import type { Property, Task, PropType } from './props';
 
-type DbRow = { id: string; user_id: string; name: string; created: string };
+type DbRow = { id: string; user_id: string; name: string; title_label: string; done_label: string; created: string };
 type PropRow = { id: string; db_id: string; name: string; type: PropType; options: string | null; position: number };
 type TaskRow = { id: string; db_id: string; title: string; done: number; props: string; position: number; created: string };
 
@@ -12,7 +12,14 @@ type TaskRow = { id: string; db_id: string; title: string; done: number; props: 
  * row that can reach the client must be spread into a plain object first.
  */
 function toDatabase(r: DbRow) {
-  return { id: r.id, user_id: r.user_id, name: r.name, created: r.created };
+  return {
+    id: r.id,
+    user_id: r.user_id,
+    name: r.name,
+    title_label: r.title_label ?? 'Name',
+    done_label: r.done_label ?? 'Done',
+    created: r.created,
+  };
 }
 
 function toProperty(r: PropRow): Property {
@@ -54,6 +61,19 @@ export function createDatabase(userId: string, name: string) {
 export function renameDatabase(userId: string, dbId: string, name: string): boolean {
   const r = getDb().prepare('UPDATE databases SET name = ? WHERE id = ? AND user_id = ?').run(name, dbId, userId);
   return r.changes > 0;
+}
+
+/** Renames one of the two system columns (title or done). */
+export function setSystemLabel(
+  userId: string,
+  dbId: string,
+  which: 'title_label' | 'done_label',
+  label: string
+): boolean {
+  // `which` is never interpolated from user input: the route maps a fixed key
+  // onto one of these two literals before calling in.
+  const sql = `UPDATE databases SET ${which} = ? WHERE id = ? AND user_id = ?`;
+  return getDb().prepare(sql).run(label, dbId, userId).changes > 0;
 }
 
 export function deleteDatabase(userId: string, dbId: string): boolean {
@@ -99,6 +119,25 @@ export function getPropertyOwned(userId: string, propId: string) {
  * longer valid gets cleared here, in the same transaction, and the count is
  * returned so the UI can tell the user how many tasks were affected.
  */
+/**
+ * True when no task in this database holds any value for the property.
+ * Changing a property's type is only safe on an empty column: existing values
+ * would be stranded in the old shape with no way to interpret them.
+ */
+export function isPropertyColumnEmpty(dbId: string, propId: string): boolean {
+  const rows = getDb().prepare('SELECT props FROM tasks WHERE db_id = ?').all(dbId) as { props: string }[];
+  return rows.every((r) => {
+    const v = (JSON.parse(r.props) as Record<string, unknown>)[propId];
+    return v === undefined || v === null;
+  });
+}
+
+export function changePropertyType(propId: string, type: PropType, options: string[] | null): void {
+  getDb()
+    .prepare('UPDATE properties SET type = ?, options = ? WHERE id = ?')
+    .run(type, options ? JSON.stringify(options) : null, propId);
+}
+
 export function updateProperty(
   propId: string,
   dbId: string,

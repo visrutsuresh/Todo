@@ -5,7 +5,8 @@ import type { Property, Task } from '@/lib/props';
 import PropCell from './PropCell';
 import PropertyHeader from './PropertyHeader';
 import AddProperty from './AddProperty';
-import { TYPE_ICON, CloseIcon, PlusIcon, CheckIcon } from '../../Icons';
+import { CloseIcon, PlusIcon } from '../../Icons';
+import SystemHeader from './SystemHeader';
 
 async function api(url: string, method: string, body?: unknown) {
   const res = await fetch(url, {
@@ -27,6 +28,9 @@ export default function TableView({
   addRowRef,
   onHide,
   onSort,
+  titleLabel,
+  doneLabel,
+  emptyColumns,
 }: {
   dbId: string;
   properties: Property[];
@@ -34,6 +38,9 @@ export default function TableView({
   addRowRef?: React.RefObject<HTMLInputElement | null>;
   onHide?: (id: string) => void;
   onSort?: (id: string, dir: 'asc' | 'desc') => void;
+  titleLabel: string;
+  doneLabel: string;
+  emptyColumns: Record<string, boolean>;
 }) {
   const [tasks, setTasks] = useState<Task[]>(initial);
   const [title, setTitle] = useState('');
@@ -97,23 +104,15 @@ export default function TableView({
       <table className="ntable">
         <thead>
           <tr>
-            <th style={{ width: 92 }}>
-              <div className="col-head">
-                <span className="col-icon">
-                  <CheckIcon />
-                </span>
-                Done
-              </div>
+            <th style={{ width: 110 }}>
+              <SystemHeader dbId={dbId} which="done" label={doneLabel} />
             </th>
             <th style={{ minWidth: 260 }}>
-              <div className="col-head">
-                <span className="col-icon">{(() => { const I = TYPE_ICON.text; return <I />; })()}</span>
-                Name
-              </div>
+              <SystemHeader dbId={dbId} which="title" label={titleLabel} />
             </th>
             {properties.map((p) => (
               <th key={p.id} style={{ minWidth: 150 }}>
-                <PropertyHeader prop={p} onHide={onHide} onSort={onSort} />
+                <PropertyHeader prop={p} columnEmpty={emptyColumns[p.id] ?? true} onHide={onHide} onSort={onSort} />
               </th>
             ))}
             <th className="col-add">

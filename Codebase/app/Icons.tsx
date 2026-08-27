@@ -200,3 +200,11 @@ export function EyeOffIcon(p: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function SwapIcon(p: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...box(p)}>
+      <path d="M4 8h13l-3-3M20 16H7l3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

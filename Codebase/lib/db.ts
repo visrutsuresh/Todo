@@ -25,10 +25,12 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 CREATE TABLE IF NOT EXISTS databases (
-  id       TEXT PRIMARY KEY,
-  user_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name     TEXT NOT NULL,
-  created  TEXT NOT NULL
+  id           TEXT PRIMARY KEY,
+  user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name         TEXT NOT NULL,
+  title_label  TEXT NOT NULL DEFAULT 'Name',
+  done_label   TEXT NOT NULL DEFAULT 'Done',
+  created      TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS properties (
@@ -67,9 +69,22 @@ export function getDb(): DatabaseSync {
   // SQLite defaults foreign key enforcement to OFF for backwards compatibility.
   runSql('PRAGMA foreign_keys = ON');
   runSql(SCHEMA);
+  migrate(db, runSql);
 
   globalThis.__todoDb = db;
   return db;
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS does nothing to a table that already exists, so a
+ * database file created before a column was added would silently lack it.
+ * ponytail: no migrations framework for two columns. Check the actual table
+ * shape and add what is missing. Idempotent, so it is safe on every boot.
+ */
+function migrate(db: DatabaseSync, runSql: (sql: string) => void) {
+  const cols = (db.prepare('PRAGMA table_info(databases)').all() as { name: string }[]).map((c) => c.name);
+  if (!cols.includes('title_label')) runSql("ALTER TABLE databases ADD COLUMN title_label TEXT NOT NULL DEFAULT 'Name'");
+  if (!cols.includes('done_label')) runSql("ALTER TABLE databases ADD COLUMN done_label TEXT NOT NULL DEFAULT 'Done'");
 }
 
 export function newId(): string {

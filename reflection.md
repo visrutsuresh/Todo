@@ -2,7 +2,7 @@
 
 ## How did you break down the problem before prompting?
 
-I have experience in building applications using AI coding tools like Claude Code. Hence I have my own harness, agent files, custome CLAUDE.md and an entire working knowledge base of markdown files. Once such file is the AI Vibecoding Guide which is a file that contains my entire workflow in building full stack applications. In accordance with that I identifed the users, the main functional requirements, some nice to have features, a reference for inspiration and create the most important document the Product Requirements Document (PRD). Once I approved the PRD then it started going to work.
+I have experience in building applications using AI coding tools like Claude Code. Hence I have my own harness, agent files, custom CLAUDE.md and an entire working knowledge base of markdown files. Once such file is the AI Vibecoding Guide which is a file that contains my entire workflow in building full stack applications. In accordance with that I identifed the users, the main functional requirements, some nice to have features, a reference for inspiration and create the most important document the Product Requirements Document (PRD). Once I approved the PRD then it started going to work.
 
 ## What did the AI get wrong, and how did you fix it?
 

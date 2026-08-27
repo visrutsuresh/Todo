@@ -5,24 +5,25 @@ import { compareValues, type Property, type Task } from '@/lib/props';
 import TableView from './TableView';
 import BoardView from './BoardView';
 import ViewSettings from './ViewSettings';
-import { TableIcon, BoardIcon, SettingsIcon } from '../../Icons';
+import { SettingsIcon } from '../../Icons';
 
 export type ViewName = 'table' | 'board';
 export type SortState = { propId: string | null; dir: 'asc' | 'desc' };
-
-const TABS: { id: ViewName; label: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }[] = [
-  { id: 'table', label: 'Table', Icon: TableIcon },
-  { id: 'board', label: 'Board', Icon: BoardIcon },
-];
 
 export default function ViewSwitcher({
   dbId,
   properties,
   tasks,
+  titleLabel,
+  doneLabel,
+  emptyColumns,
 }: {
   dbId: string;
   properties: Property[];
   tasks: Task[];
+  titleLabel: string;
+  doneLabel: string;
+  emptyColumns: Record<string, boolean>;
 }) {
   const [view, setView] = useState<ViewName>('table');
   const [groupBy, setGroupBy] = useState<string>(properties.find((p) => p.type === 'select')?.id ?? '');
@@ -64,24 +65,8 @@ export default function ViewSwitcher({
 
   return (
     <div>
-      <div className="db-bar">
-        <nav className="view-tabs">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setView(t.id)}
-              aria-current={view === t.id ? 'page' : undefined}
-              className={`view-tab ${view === t.id ? 'is-active' : ''}`}
-            >
-              <span className="col-icon">
-                <t.Icon />
-              </span>
-              {t.label}
-            </button>
-          ))}
-        </nav>
-
+      {/* Layout now lives in the View settings panel, so the tab row is gone. */}
+      <div className="db-bar db-bar-end">
         <div className="db-tools">
           <button
             className={`tool ${settings ? 'is-active' : ''}`}
@@ -107,6 +92,9 @@ export default function ViewSwitcher({
           addRowRef={addRowRef}
           onHide={toggleHidden}
           onSort={(propId, dir) => setSort({ propId, dir })}
+          titleLabel={titleLabel}
+          doneLabel={doneLabel}
+          emptyColumns={emptyColumns}
         />
       ) : (
         <BoardView

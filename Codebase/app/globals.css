@@ -1181,3 +1181,23 @@ a {
   font-size: 12px;
   color: var(--fg);
 }
+
+.db-bar-end {
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.pop-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pop-item:disabled:hover {
+  background: transparent;
+}
+
+.pop-item .spacer {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--fg-subtle);
+}

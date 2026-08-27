@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Property } from '@/lib/props';
-import { TYPE_ICON, SortIcon, TrashIcon, SettingsIcon, EyeOffIcon, ChevronIcon } from '../../Icons';
+import { PROP_TYPES, type Property, type PropType } from '@/lib/props';
+import { TYPE_ICON, SortIcon, TrashIcon, SettingsIcon, EyeOffIcon, ChevronIcon, SwapIcon } from '../../Icons';
 import ConfirmDialog from '../../ConfirmDialog';
 
 /**
@@ -16,10 +16,13 @@ import ConfirmDialog from '../../ConfirmDialog';
  */
 export default function PropertyHeader({
   prop,
+  columnEmpty,
   onHide,
   onSort,
 }: {
   prop: Property;
+  /** Server-computed: true when no task holds a value for this property. */
+  columnEmpty: boolean;
   onHide?: (id: string) => void;
   onSort?: (id: string, dir: 'asc' | 'desc') => void;
 }) {
@@ -31,6 +34,9 @@ export default function PropertyHeader({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [newType, setNewType] = useState<PropType>(prop.type);
+  const [newOptions, setNewOptions] = useState('');
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
@@ -56,6 +62,9 @@ export default function PropertyHeader({
   function close() {
     setOpen(false);
     setEditing(false);
+    setTyping(false);
+    setNewType(prop.type);
+    setNewOptions('');
     setError('');
     setName(prop.name);
     setOptionsText(prop.options?.join(', ') ?? '');
@@ -112,6 +121,30 @@ export default function PropertyHeader({
     if (cleared > 0) alert(`Cleared that value from ${cleared} task${cleared === 1 ? '' : 's'}.`);
 
     setBusy(false);
+    close();
+    router.refresh();
+  }
+
+  async function changeType() {
+    setBusy(true);
+    setError('');
+    const body: { name: string; type: PropType; options?: string[] } = { name, type: newType };
+    if (newType === 'select') {
+      body.options = newOptions.split(',').map((o) => o.trim()).filter(Boolean);
+    }
+
+    const res = await fetch(`/api/properties/${prop.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    setBusy(false);
+    if (!res.ok) {
+      const b = await res.json().catch(() => ({}));
+      setError(b.message ?? 'Could not change the type.');
+      return;
+    }
     close();
     router.refresh();
   }
@@ -187,6 +220,61 @@ export default function PropertyHeader({
 
               <button className="btn btn-sm btn-primary" style={{ marginTop: 8 }} onClick={save} disabled={busy}>
                 Save
+              </button>
+            </div>
+          )}
+
+          <button
+            className="pop-item"
+            onClick={() => columnEmpty && setTyping((v) => !v)}
+            role="menuitem"
+            disabled={!columnEmpty}
+            title={columnEmpty ? undefined : 'Only an empty column can change type'}
+          >
+            <SwapIcon width={14} height={14} />
+            Change type
+            {columnEmpty ? (
+              <span className={`pop-caret ${typing ? 'is-open' : ''}`}>
+                <ChevronIcon width={12} height={12} />
+              </span>
+            ) : (
+              <span className="spacer">column not empty</span>
+            )}
+          </button>
+
+          {typing && columnEmpty && (
+            <div className="pop-sub">
+              <select
+                className="field"
+                aria-label="New property type"
+                value={newType}
+                onChange={(e) => setNewType(e.target.value as PropType)}
+              >
+                {PROP_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+
+              {newType === 'select' && (
+                <input
+                  className="field"
+                  style={{ marginTop: 6 }}
+                  aria-label="Options for the new type"
+                  placeholder="Options, comma separated"
+                  value={newOptions}
+                  onChange={(e) => setNewOptions(e.target.value)}
+                />
+              )}
+
+              <button
+                className="btn btn-sm btn-primary"
+                style={{ marginTop: 8 }}
+                onClick={changeType}
+                disabled={busy || newType === prop.type}
+              >
+                Change type
               </button>
             </div>
           )}

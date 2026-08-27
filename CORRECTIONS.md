@@ -99,3 +99,15 @@ Format: what the AI did, what I said, what changed.
 **Fix.** Replaced it with a fixed-position popover anchored to the header via `getBoundingClientRect`, clamped to the viewport so a column near the right edge does not open a menu off screen. The whole header is now the trigger, so there are no hover-revealed buttons at all. Escape and click-outside both dismiss.
 
 **Lesson carried forward.** The AI would have "fixed" the overflow with `overflow: visible` or a negative margin and left the interaction as it was. The real fix was that a popover does not belong inside the element it is anchored to. When the CSS fight gets awkward, the layout is usually telling you the structure is wrong.
+
+## C9 — Type change had to be gated on the SERVER, and the schema needed a real migration
+
+**What I asked for.** Make the system column titles editable, and allow a property's type to change only while its column is empty.
+
+**Two things the AI would have got wrong if left alone.**
+
+**First, where the guard lives.** The obvious implementation is to grey out "Change type" in the menu when the column has values. That is not a guard, it is a hint: anyone can send the PATCH directly. The emptiness check now runs server-side in the route and returns 409, and the client-side version only decides what the menu offers. Verified by changing a type on an empty column (200), adding a value and retrying (409), clearing the value and retrying (200).
+
+**Second, the schema.** Making the labels editable meant two new columns on `databases`. `CREATE TABLE IF NOT EXISTS` does nothing to a table that already exists, so every database file created before this change would silently lack them, and the app would have worked perfectly on a fresh machine and broken on mine. Added an idempotent migration that inspects `PRAGMA table_info` and adds only what is missing. No migrations framework for two columns.
+
+**Lesson carried forward.** "Only allow X when Y" is a security requirement, not a UI state. And a schema change is not done when the CREATE statement is updated, because the statement that creates a table is not the statement that alters one.
