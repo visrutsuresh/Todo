@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import type { Property, Task } from '@/lib/props';
 import PropCell from './PropCell';
+import PropertyHeader from './PropertyHeader';
 
 async function api(url: string, method: string, body?: unknown) {
   const res = await fetch(url, {
@@ -27,7 +27,6 @@ export default function TableView({
   properties: Property[];
   tasks: Task[];
 }) {
-  const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>(initial);
   const [title, setTitle] = useState('');
   const [error, setError] = useState('');
@@ -77,16 +76,6 @@ export default function TableView({
     }
   }
 
-  async function deleteProperty(p: Property) {
-    if (!confirm(`Delete the "${p.name}" property? Its values are removed from every task.`)) return;
-    try {
-      await api(`/api/properties/${p.id}`, 'DELETE');
-      router.refresh();
-    } catch (e) {
-      fail(e);
-    }
-  }
-
   return (
     <div>
       {error && (
@@ -102,11 +91,7 @@ export default function TableView({
             <th style={th}>Title</th>
             {properties.map((p) => (
               <th key={p.id} style={th}>
-                {p.name}{' '}
-                <span style={{ fontWeight: 400, color: '#888' }}>({p.type})</span>{' '}
-                <button type="button" onClick={() => deleteProperty(p)} aria-label={`Delete ${p.name}`}>
-                  x
-                </button>
+                <PropertyHeader prop={p} />
               </th>
             ))}
             <th style={th} />

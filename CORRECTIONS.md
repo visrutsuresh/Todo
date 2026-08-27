@@ -29,3 +29,15 @@ Format: what the AI did, what I said, what changed.
 **Fix.** Deleted all of it. The test now has a three-line header importing the real source directly. Roughly 20 lines of machinery removed.
 
 **Lesson carried forward.** When an AI produces something clever, that is the signal to stop and ask what the boring version would be. Cleverness in generated code is usually a workaround for a constraint that does not exist. This was caught only because the hack failed loudly; had the regexes happened to work, a fragile fake transpiler would have shipped and nobody would have looked at it again.
+
+## C3 — Stage 2 — half-built feature shipped, and the missing half hid a data bug
+
+**What the AI did.** Built the property system with create and delete in the UI, but no rename and no way to edit a select's options, even though the API already supported both. It then reported this as a known gap rather than fixing it.
+
+**What I said.** Fix it first, before moving on to new features.
+
+**What the fix exposed.** Building the options editor surfaced a bug that had been invisible while the feature was missing. Editing a select's options only rewrote the options list. Any task already holding a value that was no longer in the list kept that value in the database, but the dropdown had no matching `<option>`, so it rendered blank. The value was invisible on screen and still present in storage: the two disagreed silently, and nothing errored.
+
+**Fix.** `updateProperty` now clears newly-invalid values inside the same transaction as the options update and returns how many tasks were affected. The UI warns before removing an in-use option and reports the count afterwards. Renaming onto another property's name now returns 409 instead of creating two identically-labelled columns. Verified: removing an option used by 2 of 3 tasks cleared exactly those 2 and left the third untouched.
+
+**Lesson carried forward.** An AI will happily build the easy half of a feature and describe the missing half as a limitation. The gap is not just incomplete work; the unbuilt half is where the untested paths hide. Delete-and-recreate would have masked this bug indefinitely, because nobody exercises the edit path that does not exist.

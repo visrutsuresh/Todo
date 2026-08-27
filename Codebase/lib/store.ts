@@ -78,10 +78,53 @@ export function getPropertyOwned(userId: string, propId: string) {
   return row ? toProperty(row) : undefined;
 }
 
-export function updateProperty(propId: string, name: string, options: string[] | null): void {
-  getDb()
-    .prepare('UPDATE properties SET name = ?, options = ? WHERE id = ?')
-    .run(name, options ? JSON.stringify(options) : null, propId);
+/**
+ * Renames a property and optionally replaces its select options.
+ *
+ * Removing an option that tasks already use would leave those values orphaned:
+ * the stored string no longer matches any option, so the dropdown renders blank
+ * and the value is invisible but still in the database. So any value that is no
+ * longer valid gets cleared here, in the same transaction, and the count is
+ * returned so the UI can tell the user how many tasks were affected.
+ */
+export function updateProperty(
+  propId: string,
+  dbId: string,
+  name: string,
+  options: string[] | null
+): { cleared: number } {
+  const db = getDb();
+  const runSql = db.exec.bind(db);
+  runSql('BEGIN');
+  try {
+    db.prepare('UPDATE properties SET name = ?, options = ? WHERE id = ?').run(
+      name,
+      options ? JSON.stringify(options) : null,
+      propId
+    );
+
+    let cleared = 0;
+    if (options) {
+      const valid = new Set(options);
+      const rows = db.prepare('SELECT id, props FROM tasks WHERE db_id = ?').all(dbId) as { id: string; props: string }[];
+      const upd = db.prepare('UPDATE tasks SET props = ? WHERE id = ?');
+      for (const r of rows) {
+        const p = JSON.parse(r.props) as Record<string, unknown>;
+        const v = p[propId];
+        if (typeof v === 'string' && !valid.has(v)) {
+          delete p[propId];
+          upd.run(JSON.stringify(p), r.id);
+          cleared += 1;
+        }
+      }
+    }
+
+    runSql('COMMIT');
+    return { cleared };
+  } catch (e) {
+    runSql('ROLLBACK');
+    throw e;
+  }
 }
 
 /**
