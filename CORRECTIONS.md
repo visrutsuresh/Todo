@@ -17,3 +17,15 @@ Format: what the AI did, what I said, what changed.
 **Fix.** Queried the registry for the real current version (`npm view next version`, 16.3.3), upgraded Next and React, re-ran audit. Now 0 vulnerabilities.
 
 **Lesson carried forward.** Never accept an AI-written dependency version without checking the registry. This one was caught because `npm install` prints the warning unprompted. A version that is merely outdated rather than vulnerable would have printed nothing and shipped silently.
+
+## C2 — Stage 2 — AI wrote a regex transpiler instead of checking what the runtime already did
+
+**What the AI did.** Needed to unit-test `lib/props.ts`, which is plain TypeScript. Assumed a `.mjs` test file could not import a `.ts` file, so it wrote a chain of roughly a dozen regular expressions to strip type annotations out of the source, wrote the result to a temp file, and dynamically imported that.
+
+**What went wrong.** The regexes did not cover every annotation in the file and the import failed. More importantly, even if they had worked, the test would have been running against a mangled copy of the source rather than the source itself, so a bug introduced by the stripping would look like a bug in the code.
+
+**Root cause.** Reflex reach for a clever workaround without first checking whether the runtime already solved it. Node 24 strips TypeScript types natively; `import ... from './props.ts'` just works. The AI had already chosen Node 24 for its built-in SQLite and still did not consider its built-in type stripping.
+
+**Fix.** Deleted all of it. The test now has a three-line header importing the real source directly. Roughly 20 lines of machinery removed.
+
+**Lesson carried forward.** When an AI produces something clever, that is the signal to stop and ask what the boring version would be. Cleverness in generated code is usually a workaround for a constraint that does not exist. This was caught only because the hack failed loudly; had the regexes happened to work, a fragile fake transpiler would have shipped and nobody would have looked at it again.
