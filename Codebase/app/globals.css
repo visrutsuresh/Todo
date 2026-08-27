@@ -94,6 +94,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  line-height: 1;
   height: 32px;
   padding: 0 12px;
   border-radius: var(--radius);
@@ -289,8 +290,11 @@ a {
 }
 
 .sb-caret {
-  display: inline-block;
-  width: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
   transition: transform 0.12s;
   color: var(--fg-subtle);
 }
@@ -308,6 +312,7 @@ a {
 .sb-item {
   display: flex;
   align-items: center;
+  line-height: 1.4;
   gap: 7px;
   padding: 4px 6px;
   border-radius: var(--radius-sm);
@@ -430,6 +435,7 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
+  line-height: 1.1;
   font-size: 30px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -457,7 +463,8 @@ a {
 .view-tab {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  line-height: 1;
   height: 30px;
   padding: 0 12px;
   border-radius: 999px;
@@ -514,14 +521,35 @@ a {
 .col-head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  line-height: 1;
 }
 
-.col-icon {
+/* Inline SVG sits on the text baseline by default, which is why icons looked
+   low against their labels everywhere. inline-flex + centred alignment fixes
+   it once, globally, instead of nudging each icon with margins. */
+.col-icon,
+.sb-item-icon,
+.db-title-icon,
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
   color: var(--fg-subtle);
-  font-size: 11px;
-  width: 12px;
-  text-align: center;
+}
+
+.col-icon svg,
+.sb-item-icon svg,
+.db-title-icon svg,
+.icon svg,
+.btn svg,
+.field-affix svg,
+.view-tab svg,
+.sb-caret svg,
+.menu-item svg {
+  display: block;
 }
 
 /* Notion reveals row and column actions on hover only, so the grid stays calm
@@ -595,7 +623,8 @@ a {
 .add-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
+  line-height: 1;
   height: var(--row-h);
   padding: 0 8px;
   color: var(--fg-subtle);
@@ -653,6 +682,7 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
+  line-height: 1;
   margin: 0 0 10px;
   padding: 0 4px;
   font-size: 13px;
@@ -764,4 +794,284 @@ a {
 .icon {
   line-height: 0;
   color: var(--fg-subtle);
+}
+
+/* ---------- database toolbar (notion) ---------- */
+
+.db-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.db-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+}
+
+.tool:hover {
+  background: var(--bg-hover);
+  color: var(--fg);
+}
+
+.tool.is-active {
+  background: var(--bg-elevated);
+  color: var(--fg);
+}
+
+.btn-new {
+  height: 28px;
+  padding: 0 14px;
+  margin-left: 6px;
+  border-radius: var(--radius);
+  background: var(--fg);
+  color: #111;
+  font-weight: 500;
+}
+
+.btn-new:hover {
+  background: #fff;
+}
+
+/* ---------- view settings panel ---------- */
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--border);
+  padding: 14px;
+  overflow-y: auto;
+  z-index: 40;
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.4);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.panel-group {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.panel-group:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.panel-label {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  margin: 0 0 8px;
+  text-transform: none;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: var(--bg-hover);
+}
+
+.menu-item .spacer {
+  margin-left: auto;
+  color: var(--fg-subtle);
+  font-size: 12px;
+}
+
+.seg {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.seg button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  line-height: 1;
+}
+
+.seg button:hover {
+  color: var(--fg);
+}
+
+.seg button.is-active {
+  background: var(--bg-elevated);
+  color: var(--fg);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.toggle-row:hover {
+  background: var(--bg-hover);
+}
+
+.toggle-row label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* ---------- context menu ---------- */
+
+.ctx {
+  position: fixed;
+  min-width: 170px;
+  padding: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6);
+  z-index: 60;
+}
+
+.ctx button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  text-align: left;
+  line-height: 1;
+}
+
+.ctx button:hover {
+  background: var(--bg-hover);
+}
+
+.ctx button.is-danger {
+  color: var(--danger);
+}
+
+/* ---------- dialog ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+  z-index: 80;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 340px;
+  padding: 20px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.dialog h2 {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.dialog p {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin: 0 0 18px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #1a0000;
+  font-weight: 500;
+}
+
+.btn-danger:hover {
+  background: #ff8080;
+  border-color: #ff8080;
+}
+
+/* inline rename on the page title */
+
+.db-title-input {
+  font: inherit;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--fg);
+  padding: 0;
+  width: 100%;
+  box-shadow: inset 0 -2px 0 var(--border-strong);
+}
+
+.sb-rename {
+  width: 100%;
+  height: 24px;
+  padding: 0 6px;
+  font: inherit;
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  outline: none;
 }

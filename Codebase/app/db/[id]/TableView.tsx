@@ -5,7 +5,7 @@ import type { Property, Task } from '@/lib/props';
 import PropCell from './PropCell';
 import PropertyHeader from './PropertyHeader';
 import AddProperty from './AddProperty';
-import { TYPE_ICON, CloseIcon, PlusIcon } from '../../Icons';
+import { TYPE_ICON, CloseIcon, PlusIcon, CheckIcon } from '../../Icons';
 
 async function api(url: string, method: string, body?: unknown) {
   const res = await fetch(url, {
@@ -24,10 +24,12 @@ export default function TableView({
   dbId,
   properties,
   tasks: initial,
+  addRowRef,
 }: {
   dbId: string;
   properties: Property[];
   tasks: Task[];
+  addRowRef?: React.RefObject<HTMLInputElement | null>;
 }) {
   const [tasks, setTasks] = useState<Task[]>(initial);
   const [title, setTitle] = useState('');
@@ -91,7 +93,14 @@ export default function TableView({
       <table className="ntable">
         <thead>
           <tr>
-            <th style={{ width: 36 }} />
+            <th style={{ width: 92 }}>
+              <div className="col-head">
+                <span className="col-icon">
+                  <CheckIcon />
+                </span>
+                Done
+              </div>
+            </th>
             <th style={{ minWidth: 260 }}>
               <div className="col-head">
                 <span className="col-icon">{(() => { const I = TYPE_ICON.text; return <I />; })()}</span>
@@ -112,7 +121,7 @@ export default function TableView({
         <tbody>
           {tasks.map((task) => (
             <tr key={task.id}>
-              <td style={{ textAlign: 'center' }}>
+              <td>
                 <input
                   type="checkbox"
                   aria-label={`Mark ${task.title} complete`}
@@ -159,8 +168,11 @@ export default function TableView({
       </table>
 
       <form onSubmit={addTask} className="add-row">
-        <span className="icon"><PlusIcon /></span>
+        <span className="icon">
+          <PlusIcon />
+        </span>
         <input
+          ref={addRowRef}
           type="text"
           aria-label="New task title"
           placeholder="New page"

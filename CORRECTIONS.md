@@ -67,3 +67,23 @@ Format: what the AI did, what I said, what changed.
 **Fix.** Replaced all of them with hand-written inline SVG in `app/Icons.tsx`, including one per property type. Verified 0 of those code points remain in the rendered HTML on any page.
 
 **Lesson carried forward.** An icon you cannot guarantee the font ships is not an icon. This is only visible by looking at the running app, which is exactly the check that had been skipped.
+
+## C6 — Design pass — icons misaligned everywhere, treated as a cosmetic nit but it was one root cause
+
+**What the AI did.** Placed inline SVGs next to text labels in the sidebar, column headers, view tabs, board columns and buttons, nudging sizes until each looked roughly right.
+
+**What I said.** "Ensure all icons are centered against the text as many of them aren't."
+
+**Root cause.** Inline SVG is an inline element, so it sits on the text baseline rather than centring against the text box. Every icon in the app was low by a couple of pixels for the same reason, in eight different places. The AI's instinct was to patch each site individually with margins.
+
+**Fix.** One shared rule setting the icon wrappers to `inline-flex` with centred alignment and the SVGs to `display: block`, plus explicit `line-height: 1` on the flex rows. Eight symptoms, one cause, one fix.
+
+**Lesson carried forward.** When the same visual defect appears in many places, it is one bug, not many. An AI asked to "fix the alignment" will happily add eight different margin values and call it done, which looks fixed until the font size changes.
+
+## C7 — Design pass — dead chrome offered, and declining it was the right call
+
+**What the AI did.** When copying Notion's View settings panel, the reference screenshot contains Filter, Group, Conditional color, Automations, AI Autofill and Manage data sources.
+
+**Judgment applied.** Only Layout, Property visibility and Sort were built, because only those have a feature behind them. The rest were left out entirely rather than rendered as disabled or no-op menu items.
+
+**Why.** A menu that opens onto nothing reads as broken, not as scoped. This was decided once earlier in the project and applied again here without being asked, which is the point: the rule was worth stating so it could be reused.
