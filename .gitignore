@@ -22,6 +22,3 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
-
-# Held back until submission — goes in the ZIP, not the public repo until the end
-prompt.md
