@@ -653,17 +653,15 @@ a {
   color: var(--fg-subtle);
 }
 
-/* The add-column cell is an action too, so it loses the grid borders. */
-.ntable thead th.col-add {
+/* The add-column cell is an action, not a column. It keeps a cell in every row
+   so the table's column count still matches, but draws NO borders at all:
+   leaving the bottom border on the body cells painted a phantom column strip
+   running down the page under the + button. */
+.ntable thead th.col-add,
+.ntable tbody td.col-add {
   width: 44px;
   color: var(--fg-subtle);
-  border-right: none;
-  border-top: none;
-  background: transparent;
-}
-
-.ntable tbody td.col-add {
-  border-right: none;
+  border: none;
   background: transparent;
 }
 
