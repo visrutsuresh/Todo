@@ -66,7 +66,12 @@ export function sessionCookieOptions(expires: Date) {
   return {
     httpOnly: true,
     sameSite: 'lax' as const,
-    secure: process.env.NODE_ENV === 'production',
+    // Deliberately NOT tied to NODE_ENV. The Docker path runs `next start`,
+    // which sets NODE_ENV=production but serves plain http://localhost:3000.
+    // A Secure cookie there can be dropped, and the only symptom is bouncing
+    // back to the login page with no error, which looks like a broken app.
+    // This build is local-only; a real deployment behind TLS sets this true.
+    secure: false,
     path: '/',
     expires,
   };

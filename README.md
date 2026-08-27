@@ -88,13 +88,14 @@ The demo account opens on **Sprint Board**, which has five tasks and one propert
 1. **Tick a checkbox** in the Done column to complete a task. The title goes struck through.
 2. **Click a task title** and type to rename it. It saves when you click away.
 3. **Click "New task"** at the bottom. A row appears with the placeholder already selected, so just start typing.
-4. **Click the "+"** at the right-hand end of the header row to add a property. Give it a name and pick a type. Select properties take a comma-separated list of options.
-5. **Click any column heading** to rename it, sort by it, hide it, or delete it. Types can only be changed while a column is empty.
-6. **Click the sliders icon** at the top right to open View settings, where you can switch between Table and Board, hide properties, and sort.
-7. **Switch to Board** in View settings, then drag a card between columns. It groups by whichever select property you choose.
-8. **Right-click a database** in the left sidebar to rename or delete it. Double-clicking also renames it.
-9. **Click your name** at the bottom left to sign out.
-10. **Switch to Personal** in the sidebar to see that databases are completely independent, with their own properties.
+4. **Hover over any row** and click the **X** next to the task name to delete it.
+5. **Click the "+"** at the right-hand end of the header row to add a property. Give it a name and pick a type. Select properties take a comma-separated list of options.
+6. **Click any column heading** to rename it, sort by it, hide it, or delete it. Types can only be changed while a column is empty.
+7. **Click the sliders icon** at the top right to open View settings, where you can switch between Table and Board, hide properties, and sort.
+8. **Switch to Board** in View settings, then drag a card between columns. It groups by whichever select property you choose.
+9. **Right-click a database** in the left sidebar to rename or delete it. Double-clicking also renames it.
+10. **Click your name** at the bottom left to sign out.
+11. **Switch to Personal** in the sidebar to see that databases are completely independent, with their own properties.
 
 ---
 
@@ -129,7 +130,6 @@ Todo/
 ├── README.md            this file
 ├── prompt.md            every AI prompt, exactly as it was sent
 ├── reflection.md        the AI usage write-up
-├── CORRECTIONS.md       a log of what the AI got wrong, written as it happened
 ├── docker-compose.yml   the Docker setup
 ├── Screenshots/         the working app
 └── Codebase/            the application itself

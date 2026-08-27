@@ -54,7 +54,7 @@ These were agreed explicitly rather than inherited silently.
 |---|---|
 | 1 | Scale is one user at a time, tens of databases, hundreds of tasks. No pagination, no indexes beyond primary keys, no caching. |
 | 2 | Views render client-side from a single fetch per database. No list virtualisation. |
-| 3 | Security covers password hashing, httpOnly cookies, and server-side ownership scoping on every query. It deliberately omits CSRF tokens, rate limiting and HSTS. These omissions are named honestly in `reflection.md` rather than hidden. |
+| 3 | Security covers password hashing, httpOnly cookies, server-side ownership scoping on every query, and login rate limiting. It deliberately omits CSRF tokens and HSTS. Those omissions are documented here and in the README rather than hidden. |
 | 4 | Persistence is a SQLite file on disk. No backups, no migrations framework. Schema is created on first run. |
 | 5 | Deleting a property deletes its values from every task in that database. No undo. Guarded by a confirmation modal. |
 | 6 | Deleting a database deletes its tasks. Guarded by a confirmation modal. |
