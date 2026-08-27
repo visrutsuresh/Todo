@@ -5,7 +5,7 @@ import { compareValues, type Property, type Task } from '@/lib/props';
 import TableView from './TableView';
 import BoardView from './BoardView';
 import ViewSettings from './ViewSettings';
-import { TableIcon, BoardIcon, SettingsIcon, SortIcon } from '../../Icons';
+import { TableIcon, BoardIcon, SettingsIcon } from '../../Icons';
 
 export type ViewName = 'table' | 'board';
 export type SortState = { propId: string | null; dir: 'asc' | 'desc' };
@@ -84,14 +84,6 @@ export default function ViewSwitcher({
 
         <div className="db-tools">
           <button
-            className={`tool ${sort.propId ? 'is-active' : ''}`}
-            title="Sort"
-            aria-label="Sort"
-            onClick={() => setSettings(true)}
-          >
-            <SortIcon />
-          </button>
-          <button
             className={`tool ${settings ? 'is-active' : ''}`}
             title="View settings"
             aria-label="View settings"
@@ -107,7 +99,15 @@ export default function ViewSwitcher({
       </div>
 
       {view === 'table' ? (
-        <TableView key={schemaKey} dbId={dbId} properties={visible} tasks={sorted} addRowRef={addRowRef} />
+        <TableView
+          key={schemaKey}
+          dbId={dbId}
+          properties={visible}
+          tasks={sorted}
+          addRowRef={addRowRef}
+          onHide={toggleHidden}
+          onSort={(propId, dir) => setSort({ propId, dir })}
+        />
       ) : (
         <BoardView
           key={schemaKey}

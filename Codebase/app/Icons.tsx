@@ -191,3 +191,12 @@ export function CheckIcon(p: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function EyeOffIcon(p: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...box(p)}>
+      <path d="M2 12s3.6-6.5 10-6.5c1.6 0 3 .4 4.2 1M22 12s-3.6 6.5-10 6.5c-1.6 0-3-.4-4.2-1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M4 20 20 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}

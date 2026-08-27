@@ -1075,3 +1075,109 @@ a {
   color: var(--fg);
   outline: none;
 }
+
+/* ---------- column header popover (notion) ---------- */
+
+.col-trigger {
+  width: 100%;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  text-align: left;
+}
+
+.col-trigger:hover {
+  color: var(--fg);
+}
+
+.pop {
+  position: fixed;
+  width: 238px;
+  padding: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65);
+  z-index: 70;
+}
+
+.pop-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.pop-name-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--fg-muted);
+}
+
+.pop-name .field {
+  height: 28px;
+}
+
+.pop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  text-align: left;
+  line-height: 1;
+}
+
+.pop-item:hover {
+  background: var(--bg-hover);
+}
+
+.pop-item.is-danger {
+  color: var(--danger);
+}
+
+.pop-item svg {
+  color: var(--fg-subtle);
+  flex-shrink: 0;
+}
+
+.pop-item.is-danger svg {
+  color: var(--danger);
+}
+
+.pop-caret {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  color: var(--fg-subtle);
+  transition: transform 0.12s;
+}
+
+.pop-caret.is-open {
+  transform: rotate(90deg);
+}
+
+.pop-sep {
+  height: 1px;
+  margin: 5px 2px;
+  background: var(--border);
+}
+
+.pop-sub {
+  padding: 4px 8px 8px;
+}
+
+.pop-type {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--fg);
+}

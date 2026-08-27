@@ -25,11 +25,15 @@ export default function TableView({
   properties,
   tasks: initial,
   addRowRef,
+  onHide,
+  onSort,
 }: {
   dbId: string;
   properties: Property[];
   tasks: Task[];
   addRowRef?: React.RefObject<HTMLInputElement | null>;
+  onHide?: (id: string) => void;
+  onSort?: (id: string, dir: 'asc' | 'desc') => void;
 }) {
   const [tasks, setTasks] = useState<Task[]>(initial);
   const [title, setTitle] = useState('');
@@ -109,7 +113,7 @@ export default function TableView({
             </th>
             {properties.map((p) => (
               <th key={p.id} style={{ minWidth: 150 }}>
-                <PropertyHeader prop={p} />
+                <PropertyHeader prop={p} onHide={onHide} onSort={onSort} />
               </th>
             ))}
             <th className="col-add">

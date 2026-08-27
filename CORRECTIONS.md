@@ -87,3 +87,15 @@ Format: what the AI did, what I said, what changed.
 **Judgment applied.** Only Layout, Property visibility and Sort were built, because only those have a feature behind them. The rest were left out entirely rather than rendered as disabled or no-op menu items.
 
 **Why.** A menu that opens onto nothing reads as broken, not as scoped. This was decided once earlier in the project and applied again here without being asked, which is the point: the rule was worth stating so it could be reused.
+
+## C8 — Design pass — inline editor overflowed the table, and the fix was to change the interaction, not the CSS
+
+**What the AI did.** Put the property editor inline inside the `<th>` element, revealed by hover-only `⋯` and `×` buttons.
+
+**What I said.** Remove the three dots and the x. Clicking the property should open a menu instead.
+
+**What was actually broken.** The screenshot showed it: an editor placed inside a table cell is constrained by that cell, so the Save and Cancel buttons overflowed past the right edge of the table and were partly unreachable. Two hidden problems on top of that: hover-only controls are invisible to anyone who does not hover, and a form inside a `<th>` fights the table's own layout algorithm.
+
+**Fix.** Replaced it with a fixed-position popover anchored to the header via `getBoundingClientRect`, clamped to the viewport so a column near the right edge does not open a menu off screen. The whole header is now the trigger, so there are no hover-revealed buttons at all. Escape and click-outside both dismiss.
+
+**Lesson carried forward.** The AI would have "fixed" the overflow with `overflow: visible` or a negative margin and left the interaction as it was. The real fix was that a popover does not belong inside the element it is anchored to. When the CSS fight gets awkward, the layout is usually telling you the structure is wrong.
