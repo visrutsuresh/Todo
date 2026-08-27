@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Property } from '@/lib/props';
+import { TYPE_ICON, MoreIcon, CloseIcon } from '../../Icons';
 
 /**
  * One column header. Displays the property, and switches to an inline editor
@@ -83,51 +84,68 @@ export default function PropertyHeader({ prop }: { prop: Property }) {
 
   if (!editing) {
     return (
-      <div>
-        <span>{prop.name}</span>{' '}
-        <span style={{ fontWeight: 400, color: '#888' }}>({prop.type})</span>{' '}
-        <button type="button" onClick={() => setEditing(true)} aria-label={`Edit ${prop.name}`}>
-          Edit
-        </button>{' '}
-        <button type="button" onClick={remove} aria-label={`Delete ${prop.name}`}>
-          x
-        </button>
+      <div className="col-head">
+        <span className="col-icon">{(() => { const I = TYPE_ICON[prop.type]; return <I />; })()}</span>
+        <span>{prop.name}</span>
+        <span className="col-actions">
+          <button
+            type="button"
+            className="btn btn-ghost btn-icon"
+            title={`Edit ${prop.name}`}
+            aria-label={`Edit ${prop.name}`}
+            onClick={() => setEditing(true)}
+          >
+            <MoreIcon />
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-icon"
+            title={`Delete ${prop.name}`}
+            aria-label={`Delete ${prop.name}`}
+            onClick={remove}
+          >
+            <CloseIcon />
+          </button>
+        </span>
       </div>
     );
   }
 
   return (
-    <form onSubmit={save} style={{ fontWeight: 400 }}>
+    <form onSubmit={save} style={{ padding: '6px 0' }}>
       <input
+        className="field"
+        style={{ height: 26, marginBottom: 4 }}
         type="text"
         aria-label={`Rename ${prop.name}`}
+        autoFocus
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
-        style={{ width: '100%', marginBottom: 4 }}
       />
 
       {prop.type === 'select' && (
         <input
+          className="field"
+          style={{ height: 26, marginBottom: 4 }}
           type="text"
           aria-label={`Options for ${prop.name}`}
           placeholder="Options, comma separated"
           required
           value={optionsText}
           onChange={(e) => setOptionsText(e.target.value)}
-          style={{ width: '100%', marginBottom: 4 }}
         />
       )}
 
-      <button type="submit" disabled={busy}>
+      <button type="submit" className="btn btn-sm btn-primary" disabled={busy}>
         Save
       </button>{' '}
-      <button type="button" onClick={cancel} disabled={busy}>
+      <button type="button" className="btn btn-sm" onClick={cancel} disabled={busy}>
         Cancel
       </button>
 
       {error && (
-        <p role="alert" style={{ color: '#b00', fontSize: 12, margin: '4px 0 0' }}>
+        <p role="alert" className="error">
           {error}
         </p>
       )}

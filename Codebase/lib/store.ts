@@ -1,8 +1,19 @@
 import { getDb, newId, nowIso } from './db';
 import type { Property, Task, PropType } from './props';
 
+type DbRow = { id: string; user_id: string; name: string; created: string };
 type PropRow = { id: string; db_id: string; name: string; type: PropType; options: string | null; position: number };
 type TaskRow = { id: string; db_id: string; title: string; done: number; props: string; position: number; created: string };
+
+/**
+ * node:sqlite returns rows with a NULL PROTOTYPE. JSON.stringify does not care,
+ * so every API route serialises them correctly, but React refuses to pass a
+ * null-prototype object from a Server Component to a Client Component. Every
+ * row that can reach the client must be spread into a plain object first.
+ */
+function toDatabase(r: DbRow) {
+  return { id: r.id, user_id: r.user_id, name: r.name, created: r.created };
+}
 
 function toProperty(r: PropRow): Property {
   return { ...r, options: r.options ? (JSON.parse(r.options) as string[]) : null };
@@ -15,9 +26,9 @@ function toTask(r: TaskRow): Task {
 /* ---------- databases ---------- */
 
 export function listDatabases(userId: string) {
-  return getDb()
-    .prepare('SELECT * FROM databases WHERE user_id = ? ORDER BY created DESC')
-    .all(userId) as { id: string; user_id: string; name: string; created: string }[];
+  return (
+    getDb().prepare('SELECT * FROM databases WHERE user_id = ? ORDER BY created DESC').all(userId) as DbRow[]
+  ).map(toDatabase);
 }
 
 /**
@@ -26,9 +37,10 @@ export function listDatabases(userId: string) {
  * crafted request carrying someone else's database id cannot reach data.
  */
 export function getDatabase(userId: string, dbId: string) {
-  return getDb().prepare('SELECT * FROM databases WHERE id = ? AND user_id = ?').get(dbId, userId) as
-    | { id: string; user_id: string; name: string; created: string }
+  const row = getDb().prepare('SELECT * FROM databases WHERE id = ? AND user_id = ?').get(dbId, userId) as
+    | DbRow
     | undefined;
+  return row ? toDatabase(row) : undefined;
 }
 
 export function createDatabase(userId: string, name: string) {

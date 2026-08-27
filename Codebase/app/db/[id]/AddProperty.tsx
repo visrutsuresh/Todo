@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PROP_TYPES, type PropType } from '@/lib/props';
+import { PlusIcon } from '../../Icons';
 
 export default function AddProperty({ dbId }: { dbId: string }) {
   const router = useRouter();
@@ -44,24 +45,33 @@ export default function AddProperty({ dbId }: { dbId: string }) {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)}>
-        Add property
+      <button type="button" className="btn btn-ghost btn-icon" title="Add property" onClick={() => setOpen(true)}>
+        <PlusIcon />
       </button>
     );
   }
 
   return (
-    <form onSubmit={submit} style={{ border: '1px solid #ddd', padding: 12, marginTop: 8 }}>
+    <form onSubmit={submit} style={{ padding: '6px 0', minWidth: 170 }}>
       <input
+        className="field"
+        style={{ height: 26, marginBottom: 4 }}
         type="text"
         aria-label="Property name"
         placeholder="Property name"
+        autoFocus
         required
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
 
-      <select aria-label="Property type" value={type} onChange={(e) => setType(e.target.value as PropType)}>
+      <select
+        className="field"
+        style={{ height: 26, marginBottom: 4 }}
+        aria-label="Property type"
+        value={type}
+        onChange={(e) => setType(e.target.value as PropType)}
+      >
         {PROP_TYPES.map((t) => (
           <option key={t} value={t}>
             {t}
@@ -71,6 +81,8 @@ export default function AddProperty({ dbId }: { dbId: string }) {
 
       {type === 'select' && (
         <input
+          className="field"
+          style={{ height: 26, marginBottom: 4 }}
           type="text"
           aria-label="Options, comma separated"
           placeholder="Options, comma separated"
@@ -80,13 +92,13 @@ export default function AddProperty({ dbId }: { dbId: string }) {
         />
       )}
 
-      <button type="submit">Create</button>
-      <button type="button" onClick={() => setOpen(false)}>
+      <button type="submit" className="btn btn-sm btn-primary">Create</button>{' '}
+      <button type="button" className="btn btn-sm" onClick={() => setOpen(false)}>
         Cancel
       </button>
 
       {error && (
-        <p role="alert" style={{ color: '#b00' }}>
+        <p role="alert" className="error">
           {error}
         </p>
       )}

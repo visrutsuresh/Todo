@@ -1,3 +1,6 @@
+import './globals.css';
+import { GeistMono } from 'geist/font/mono';
+
 export const metadata = {
   title: 'Todo',
   description: 'A Notion-style task manager',
@@ -6,7 +9,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif' }}>{children}</body>
+      {/* className rather than the CSS variable: it sets font-family directly,
+          so nothing depends on remembering geist's variable name. */}
+      <body className={GeistMono.className}>{children}</body>
     </html>
   );
 }

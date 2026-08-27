@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import { currentUser } from '@/lib/auth';
 import { listDatabases } from '@/lib/store';
-import SignOutButton from './SignOutButton';
-import NewDatabase from './NewDatabase';
+import Sidebar from './Sidebar';
+import Landing from './Landing';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,17 +11,13 @@ export default async function Home() {
   if (!user) redirect('/login');
 
   const dbs = listDatabases(user.id);
-  if (dbs.length > 0) redirect(`/db/${dbs[0].id}`);
 
+  // Obsidian opens on an empty pane with actions rather than auto-opening a
+  // file, so no database is loaded here either.
   return (
-    <main style={{ maxWidth: 420, margin: '80px auto' }}>
-      <p style={{ fontSize: 12, color: '#666' }}>{user.email}</p>
-      <h1>No databases yet</h1>
-      <p>A database holds your tasks and defines the properties they have.</p>
-      <NewDatabase />
-      <div style={{ marginTop: 24 }}>
-        <SignOutButton />
-      </div>
-    </main>
+    <div className="shell">
+      <Sidebar databases={dbs} email={user.email} />
+      <Landing hasDatabases={dbs.length > 0} firstId={dbs[0]?.id} />
+    </div>
   );
 }

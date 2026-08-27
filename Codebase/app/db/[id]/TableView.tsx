@@ -4,6 +4,8 @@ import { useState } from 'react';
 import type { Property, Task } from '@/lib/props';
 import PropCell from './PropCell';
 import PropertyHeader from './PropertyHeader';
+import AddProperty from './AddProperty';
+import { TYPE_ICON, CloseIcon, PlusIcon } from '../../Icons';
 
 async function api(url: string, method: string, body?: unknown) {
   const res = await fetch(url, {
@@ -54,7 +56,9 @@ export default function TableView({
   // silently disagree with the database.
   async function patch(task: Task, body: Partial<Task> & { props?: Record<string, unknown> }) {
     const before = tasks;
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, ...body, props: { ...t.props, ...body.props } } : t)));
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, ...body, props: { ...t.props, ...body.props } } : t))
+    );
     try {
       await api(`/api/tasks/${task.id}`, 'PATCH', body);
       setError('');
@@ -79,28 +83,36 @@ export default function TableView({
   return (
     <div>
       {error && (
-        <p role="alert" style={{ color: '#b00' }}>
+        <p role="alert" className="error">
           {error}
         </p>
       )}
 
-      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+      <table className="ntable">
         <thead>
           <tr>
-            <th style={th}>Done</th>
-            <th style={th}>Title</th>
+            <th style={{ width: 36 }} />
+            <th style={{ minWidth: 260 }}>
+              <div className="col-head">
+                <span className="col-icon">{(() => { const I = TYPE_ICON.text; return <I />; })()}</span>
+                Name
+              </div>
+            </th>
             {properties.map((p) => (
-              <th key={p.id} style={th}>
+              <th key={p.id} style={{ minWidth: 150 }}>
                 <PropertyHeader prop={p} />
               </th>
             ))}
-            <th style={th} />
+            <th className="col-add">
+              <AddProperty dbId={dbId} />
+            </th>
           </tr>
         </thead>
+
         <tbody>
           {tasks.map((task) => (
             <tr key={task.id}>
-              <td style={td}>
+              <td style={{ textAlign: 'center' }}>
                 <input
                   type="checkbox"
                   aria-label={`Mark ${task.title} complete`}
@@ -108,52 +120,54 @@ export default function TableView({
                   onChange={(e) => patch(task, { done: e.target.checked })}
                 />
               </td>
-              <td style={td}>
-                <input
-                  type="text"
-                  aria-label="Title"
-                  value={task.title}
-                  style={{ textDecoration: task.done ? 'line-through' : 'none', width: '100%' }}
-                  onChange={(e) => setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, title: e.target.value } : t)))}
-                  onBlur={(e) => patch(task, { title: e.target.value })}
-                />
+
+              <td>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <input
+                    className={`cell-input cell-title ${task.done ? 'is-done' : ''}`}
+                    type="text"
+                    aria-label="Title"
+                    value={task.title}
+                    onChange={(e) =>
+                      setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, title: e.target.value } : t)))
+                    }
+                    onBlur={(e) => patch(task, { title: e.target.value })}
+                  />
+                  <span className="row-actions">
+                    <button
+                      className="btn btn-ghost btn-icon"
+                      title="Delete task"
+                      aria-label={`Delete ${task.title}`}
+                      onClick={() => remove(task)}
+                    >
+                      <CloseIcon />
+                    </button>
+                  </span>
+                </div>
               </td>
+
               {properties.map((p) => (
-                <td key={p.id} style={td}>
+                <td key={p.id}>
                   <PropCell prop={p} value={task.props[p.id]} onChange={(v) => patch(task, { props: { [p.id]: v } })} />
                 </td>
               ))}
-              <td style={td}>
-                <button type="button" onClick={() => remove(task)}>
-                  Delete
-                </button>
-              </td>
+
+              <td />
             </tr>
           ))}
-
-          {tasks.length === 0 && (
-            <tr>
-              <td style={td} colSpan={properties.length + 3}>
-                No tasks yet.
-              </td>
-            </tr>
-          )}
         </tbody>
       </table>
 
-      <form onSubmit={addTask} style={{ marginTop: 12 }}>
+      <form onSubmit={addTask} className="add-row">
+        <span className="icon"><PlusIcon /></span>
         <input
           type="text"
           aria-label="New task title"
-          placeholder="New task"
+          placeholder="New page"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <button type="submit">Add</button>
       </form>
     </div>
   );
 }
-
-const th: React.CSSProperties = { border: '1px solid #ddd', padding: 6, textAlign: 'left', background: '#fafafa' };
-const td: React.CSSProperties = { border: '1px solid #ddd', padding: 6 };

@@ -41,3 +41,29 @@ Format: what the AI did, what I said, what changed.
 **Fix.** `updateProperty` now clears newly-invalid values inside the same transaction as the options update and returns how many tasks were affected. The UI warns before removing an in-use option and reports the count afterwards. Renaming onto another property's name now returns 409 instead of creating two identically-labelled columns. Verified: removing an option used by 2 of 3 tasks cleared exactly those 2 and left the third untouched.
 
 **Lesson carried forward.** An AI will happily build the easy half of a feature and describe the missing half as a limitation. The gap is not just incomplete work; the unbuilt half is where the untested paths hide. Delete-and-recreate would have masked this bug indefinitely, because nobody exercises the edit path that does not exist.
+
+## C4 — Design pass — 500 on login, caused by null-prototype rows crossing the server boundary
+
+**What the AI did.** `lib/store.ts` returned rows straight from `node:sqlite` for databases, and the page passed that array into the client `Sidebar` component.
+
+**What I said.** I logged in and got a server error.
+
+**What went wrong.** `node:sqlite` returns rows with a **null prototype**. React refuses to serialize a null-prototype object across the Server Component to Client Component boundary, so every authenticated page threw `Only plain objects, and a few built-ins, can be passed to Client Components`.
+
+**Why every test missed it.** 25 unit tests and about 40 API assertions all passed, because `JSON.stringify` does not care about prototypes: every API route returned correct JSON the whole time. The bug only exists at the React boundary, which no API-level test touches. `toTask` and `toProperty` happened to be safe because they used object spread, which produces a plain object. `listDatabases` returned raw rows, so it was the only unsafe path, and it was the one the new sidebar used.
+
+**Fix.** Added an explicit `toDatabase` mapper alongside the existing ones, so every row that can reach the client is normalised in exactly one place.
+
+**Lesson carried forward.** Two separate ones. First, a green test suite proves the paths you tested, not the app: I had never once loaded a page in a browser, and the first time a human did, it broke immediately. Second, testing at the API layer cannot catch a bug that lives at a framework boundary the API layer does not cross.
+
+## C5 — Design pass — unicode glyphs used as icons, rendered as tofu squares
+
+**What the AI did.** Used characters like the box-drawing glyph for the logo, sidebar items, view tabs and the five property-type icons.
+
+**What I said.** "What is the random square on the top of the login page."
+
+**What went wrong.** Geist Mono has no glyph for those code points, so the browser rendered the missing-character box. The AI picked characters that look right in its own output and never verified the chosen font actually ships them.
+
+**Fix.** Replaced all of them with hand-written inline SVG in `app/Icons.tsx`, including one per property type. Verified 0 of those code points remain in the rendered HTML on any page.
+
+**Lesson carried forward.** An icon you cannot guarantee the font ships is not an icon. This is only visible by looking at the running app, which is exactly the check that had been skipped.
