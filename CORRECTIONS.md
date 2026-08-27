@@ -137,3 +137,19 @@ Format: what the AI did, what I said, what changed.
 **Fix.** One `useDismiss` hook, used by all five surfaces. Verified zero remaining `addEventListener('mousedown')` calls outside it.
 
 **Lesson carried forward.** When an AI needs the same behaviour in a fifth place, it writes it a fifth time rather than noticing it has written it four times already. Duplication does not announce itself as a bug until something is missing from one copy, and then the symptom looks unrelated to the cause.
+
+## C12 — The README made three claims that were not true, caught by testing the README itself
+
+**What I asked for.** A README with step-by-step instructions, sign-in details, and the same experience I had.
+
+**What went wrong.** The draft README asserted things about the app that nobody had checked, and three of them were false:
+
+1. "The demo account opens on Sprint Board." It opened on Personal, because databases are listed newest first and Personal was seeded second.
+2. "One property of every supported type." Sprint Board had no text property at all, so the claim was wrong in the README and in the seed script's own comment.
+3. `tsconfig.tsbuildinfo`, a build artifact, was committed to the repo. Found by copying only the shipped tree and looking at what was actually in it.
+
+**How they were caught.** By running a script that checks each README claim against the running app rather than re-reading the prose. The first two were fixed by changing the app so the claims became true, seeding Personal first and adding a Notes property, rather than by softening the wording.
+
+**A fourth, caught by reading the diff.** Adding that Notes property produced a second `const notes` in the same scope, which is a syntax error that would have made `npm run seed` fail instantly for every reviewer. It existed for about a minute.
+
+**Lesson carried forward.** Documentation is the easiest place for an AI to be confidently wrong, because prose has nothing to fail against. Every instruction in a README is a testable claim, and the only way to know it is true is to run it on a clean copy, which is exactly what a reviewer will do.

@@ -1,23 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
+import { hashPassword, verifyPassword } from './password.ts';
 
-// The password functions are duplicated here rather than imported because
-// lib/auth.ts pulls in next/headers, which cannot load outside a request.
-// ponytail: the crypto is four lines; a test harness that can import TSX
-// through Next's compiler costs more than it is worth for this.
-const KEYLEN = 64;
-
-function hashPassword(password, salt = randomBytes(16).toString('hex')) {
-  return { hash: scryptSync(password, salt, KEYLEN).toString('hex'), salt };
-}
-
-function verifyPassword(password, hash, salt) {
-  const candidate = scryptSync(password, salt, KEYLEN);
-  const stored = Buffer.from(hash, 'hex');
-  if (candidate.length !== stored.length) return false;
-  return timingSafeEqual(candidate, stored);
-}
+// Imports the real hashing code. It used to be duplicated here because auth.ts
+// pulls in next/headers and cannot load outside a request; splitting hashing
+// into password.ts removed the copy, so the test now exercises what ships.
 
 test('correct password verifies', () => {
   const { hash, salt } = hashPassword('correct horse battery');

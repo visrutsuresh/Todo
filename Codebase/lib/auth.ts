@@ -1,24 +1,13 @@
-import { scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { getDb, newId, nowIso } from './db';
+import { hashPassword, verifyPassword } from './password';
 
 export const SESSION_COOKIE = 'todo_session';
 const SESSION_DAYS = 7;
-const KEYLEN = 64;
 
 export type User = { id: string; email: string };
-
-export function hashPassword(password: string, salt = randomBytes(16).toString('hex')) {
-  return { hash: scryptSync(password, salt, KEYLEN).toString('hex'), salt };
-}
-
-export function verifyPassword(password: string, hash: string, salt: string): boolean {
-  const candidate = scryptSync(password, salt, KEYLEN);
-  const stored = Buffer.from(hash, 'hex');
-  // Length check first: timingSafeEqual throws on mismatched lengths.
-  if (candidate.length !== stored.length) return false;
-  return timingSafeEqual(candidate, stored);
-}
+export { hashPassword, verifyPassword };
 
 export function createSession(userId: string): { token: string; expires: Date } {
   const token = randomBytes(32).toString('hex');
