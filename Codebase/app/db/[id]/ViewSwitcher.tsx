@@ -30,7 +30,7 @@ export default function ViewSwitcher({
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<SortState>({ propId: null, dir: 'asc' });
   const [settings, setSettings] = useState(false);
-  const addRowRef = useRef<HTMLInputElement>(null);
+  const newTaskRef = useRef<(() => void) | null>(null);
 
   const visible = properties.filter((p) => !hidden.has(p.id));
 
@@ -77,7 +77,7 @@ export default function ViewSwitcher({
           >
             <SettingsIcon />
           </button>
-          <button className="btn btn-new" onClick={() => addRowRef.current?.focus()}>
+          <button className="btn btn-new" onClick={() => newTaskRef.current?.()}>
             New
           </button>
         </div>
@@ -89,7 +89,7 @@ export default function ViewSwitcher({
           dbId={dbId}
           properties={visible}
           tasks={sorted}
-          addRowRef={addRowRef}
+          newTaskRef={newTaskRef}
           onHide={toggleHidden}
           onSort={(propId, dir) => setSort({ propId, dir })}
           titleLabel={titleLabel}

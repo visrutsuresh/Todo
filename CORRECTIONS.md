@@ -111,3 +111,15 @@ Format: what the AI did, what I said, what changed.
 **Second, the schema.** Making the labels editable meant two new columns on `databases`. `CREATE TABLE IF NOT EXISTS` does nothing to a table that already exists, so every database file created before this change would silently lack them, and the app would have worked perfectly on a fresh machine and broken on mine. Added an idempotent migration that inspects `PRAGMA table_info` and adds only what is missing. No migrations framework for two columns.
 
 **Lesson carried forward.** "Only allow X when Y" is a security requirement, not a UI state. And a schema change is not done when the CREATE statement is updated, because the statement that creates a table is not the statement that alters one.
+
+## C10 — Add-row was the wrong interaction, not just the wrong styling
+
+**What the AI did.** Built the add-row as a text input inside the grid: type a title, press Enter, and the row appears. It carried the grid's borders and read as another cell.
+
+**What I said.** Remove the borders, and clicking it should create a blank row with a placeholder called "task" with the cursor already in it. Change the label to New task.
+
+**Why the original was worse than it looked.** Typing a title before the row exists means the row is not real until you commit, so none of its property cells are usable yet. Notion creates the record first and lets you edit in place. It also meant the "New" button in the toolbar could only focus a text box rather than actually create anything.
+
+**Fix.** Clicking creates the row immediately with the title "task", then focuses **and selects** it, so the first keystroke replaces the placeholder rather than appending to it. That select step is the difference between "task" and "taskMy real title". The toolbar New button now calls the same function through a ref rather than focusing an input. Borders removed from both the add-row and the add-column cell, so both read as actions rather than as grid cells.
+
+**Lesson carried forward.** Two visual complaints, borders and a label, turned out to sit on top of a wrong interaction model. Fixing only what was pointed at would have left a prettier version of the same flaw.

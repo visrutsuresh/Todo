@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { Property, Task } from '@/lib/props';
 import PropCell from './PropCell';
 import PropertyHeader from './PropertyHeader';
@@ -25,7 +25,7 @@ export default function TableView({
   dbId,
   properties,
   tasks: initial,
-  addRowRef,
+  newTaskRef,
   onHide,
   onSort,
   titleLabel,
@@ -35,7 +35,8 @@ export default function TableView({
   dbId: string;
   properties: Property[];
   tasks: Task[];
-  addRowRef?: React.RefObject<HTMLInputElement | null>;
+  /** ViewSwitcher's New button calls through this to create a row. */
+  newTaskRef?: React.MutableRefObject<(() => void) | null>;
   onHide?: (id: string) => void;
   onSort?: (id: string, dir: 'asc' | 'desc') => void;
   titleLabel: string;
@@ -43,26 +44,48 @@ export default function TableView({
   emptyColumns: Record<string, boolean>;
 }) {
   const [tasks, setTasks] = useState<Task[]>(initial);
-  const [title, setTitle] = useState('');
   const [error, setError] = useState('');
+  // The row to focus after creation. Cleared once focused so a re-render does
+  // not steal the cursor back while the user is typing somewhere else.
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const inputs = useRef<Record<string, HTMLInputElement | null>>({});
 
   function fail(e: unknown) {
     setError(e instanceof Error ? e.message : 'Something went wrong.');
   }
 
-  async function addTask(e: React.FormEvent) {
-    e.preventDefault();
-    const t = title.trim();
-    if (!t) return;
+  // Creates the row immediately with a placeholder, then focuses and SELECTS
+  // it, so the first keystroke replaces the placeholder instead of appending
+  // to it. Creating first (rather than collecting a title then posting) means
+  // the row is real straight away and every property cell is usable.
+  async function addTask() {
     try {
-      const created = (await api(`/api/databases/${dbId}/tasks`, 'POST', { title: t })) as Task;
+      const created = (await api(`/api/databases/${dbId}/tasks`, 'POST', { title: 'task' })) as Task;
       setTasks((prev) => [...prev, created]);
-      setTitle('');
+      setFocusId(created.id);
       setError('');
     } catch (e) {
       fail(e);
     }
   }
+
+  useEffect(() => {
+    if (!focusId) return;
+    const el = inputs.current[focusId];
+    if (el) {
+      el.focus();
+      el.select();
+    }
+    setFocusId(null);
+  }, [focusId]);
+
+  useEffect(() => {
+    if (!newTaskRef) return;
+    newTaskRef.current = addTask;
+    return () => {
+      newTaskRef.current = null;
+    };
+  });
 
   // Optimistic: update the row immediately, roll back if the server rejects.
   // Without the rollback a value the server refused would stay on screen and
@@ -136,6 +159,9 @@ export default function TableView({
               <td>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <input
+                    ref={(el) => {
+                      inputs.current[task.id] = el;
+                    }}
                     className={`cell-input cell-title ${task.done ? 'is-done' : ''}`}
                     type="text"
                     aria-label="Title"
@@ -164,25 +190,18 @@ export default function TableView({
                 </td>
               ))}
 
-              <td />
+              <td className="col-add" />
             </tr>
           ))}
         </tbody>
       </table>
 
-      <form onSubmit={addTask} className="add-row">
+      <button type="button" className="add-row" onClick={addTask}>
         <span className="icon">
           <PlusIcon />
         </span>
-        <input
-          ref={addRowRef}
-          type="text"
-          aria-label="New task title"
-          placeholder="New page"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </form>
+        New task
+      </button>
     </div>
   );
 }

@@ -620,17 +620,19 @@ a {
   font-size: 12px;
 }
 
+/* Notion's add-row sits OUTSIDE the grid: no borders, so it reads as an action
+   rather than as another cell. */
 .add-row {
   display: flex;
   align-items: center;
   gap: 9px;
   line-height: 1;
+  width: 100%;
   height: var(--row-h);
   padding: 0 8px;
   color: var(--fg-subtle);
-  border-bottom: 1px solid var(--border);
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  border: none;
+  text-align: left;
 }
 
 .add-row:hover {
@@ -651,9 +653,18 @@ a {
   color: var(--fg-subtle);
 }
 
-.col-add {
-  width: 40px;
+/* The add-column cell is an action too, so it loses the grid borders. */
+.ntable thead th.col-add {
+  width: 44px;
   color: var(--fg-subtle);
+  border-right: none;
+  border-top: none;
+  background: transparent;
+}
+
+.ntable tbody td.col-add {
+  border-right: none;
+  background: transparent;
 }
 
 /* board */
